@@ -20,7 +20,7 @@
         "sqlServerAdministratorLogin": {
             "reference": {
                 "keyVault": {
-                    "id": "/subscriptions/789bbda2-e46b-44fe-8acc-d3ceef36dc02/resourceGroups/testbicep/providers/Microsoft.KeyVault/vaults/KeyVaultTestGpBicep"
+                    "id": "<resource-path>"
                 },
                 "secretName": "sqlServerAdministratorLogin"
             }
@@ -28,7 +28,7 @@
         "sqlServerAdministratorPassword": {
             "reference": {
                 "keyVault": {
-                    "id": "/subscriptions/789bbda2-e46b-44fe-8acc-d3ceef36dc02/resourceGroups/testbicep/providers/Microsoft.KeyVault/vaults/KeyVaultTestGpBicep"
+                    "id": "<resource-path>"
                 },
                 "secretName": "sqlServerAdministratorPassword"
             }
