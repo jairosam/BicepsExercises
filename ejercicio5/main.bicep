@@ -1,12 +1,18 @@
 param cosmosDBAccountName string = 'toyrnd-${uniqueString(resourceGroup().id)}'
 param cosmosDBDatabaseThroughput int = 400
 param location string = resourceGroup().location
+param storageAccountName string = 'storageaccounttestgp'
 
 var cosmosDBDatabaseName = 'FlightTests'
 var cosmosDBContainerName = 'FlightTests'
 var cosmosDBContainerPartitionKey = '/droneId'
 
-resource cosmosDBAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
+var logAnalyticsWorkspaceName = 'ToyLogs'
+var cosmosDBAccountDiagnosticSettingsName = 'route-logs-to-log-analytics'
+
+var storageAccountBlobDiagnosticSettingsName = 'route-logs-to-log-analytics' 
+
+resource cosmosDBAccount 'Microsoft.DocumentDB/databaseAccounts@2020-04-01' = {
   name: cosmosDBAccountName
   location: location
   properties: {
@@ -19,7 +25,7 @@ resource cosmosDBAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
   }
 }
 
-resource cosmosDBDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2023-04-15' = {
+resource cosmosDBDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2020-04-01' = {
   parent: cosmosDBAccount
   name: cosmosDBDatabaseName
   properties: {
@@ -46,4 +52,50 @@ resource cosmosDBDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@20
       options: {} 
     }
   }
+}
+
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' existing = {
+  name: logAnalyticsWorkspaceName
+}
+
+resource cosmosDBAccountDiagnostics 'Microsoft.Insights/diagnosticSettings@2017-05-01-preview' = {
+  scope: cosmosDBAccount
+  name: cosmosDBAccountDiagnosticSettingsName
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'DataPlanRequests'
+        enabled: true
+      }
+    ]
+  }
+}
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing = {
+  name: storageAccountName
+  resource blobservice 'blobServices' existing = {
+    name: 'default'
+  }
+}
+
+resource storageAccountBlobDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2017-05-01-preview' = {
+  scope: storageAccount::blobservice
+  name: storageAccountBlobDiagnosticSettingsName
+  properties:{
+    logs: [
+      {
+        category: 'StorageRead'
+        enabled: true
+      }
+      {
+        category: 'StorageWrite'
+        enabled: true
+      }
+      {
+        category: 'StorageDelete'
+        enabled: true
+      }
+    ]
+  } 
 }
